@@ -1,5 +1,5 @@
 // The size of a piece of stock material
-stock=[610, 305, 3.175];
+stock=[610, 457, 1.5875];
 
 // the full size of the display
 display=[2440, 502, 50];
