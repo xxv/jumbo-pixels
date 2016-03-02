@@ -1,60 +1,58 @@
-// The size of a piece of stock material
-stock=[610, 457, 1.5875];
+use <paginate.scad>
 
-// the full size of the display
-display=[2440, 502, 50];
+// The size of a piece of stock material
+//stock = [610, 457, 1.58]; // 24x18
+stock = [812, 457, 1.58]; // 32x18
+//stock = [300, 300, 1.5875];
 
 // the size an individual pixel needs to be
-pixel=[33.334, 33.334, display[2]];
+pixel = [33.334, 33.334, 50];
 
-led_strip_width=10;
-led_strip_thickness=0.3;
-apa102=[5,5,1.5];
+// the full size of the display
+//display = [2440, 502, pixel[2]];
 
-preview();
-//cut_short();
-//cut_long();
+display_in_px = [73, 15, 1];
+//display_in_px = [5, 5, 1];
+display = [pixel[0] * display_in_px[0], pixel[1] * display_in_px[1], pixel[2]];
 
+led_strip_width = 10;
+led_strip_thickness = 0.3;
+apa102 = [5, 5, 1.5];
+
+//preview();
+//cut_strip_short();
+cut_strip_long();
 short_strip_rows = [ for (x = [pixel[0] : pixel[0] : display[0] - pixel[0]]) x ];
 long_strip_rows  = [ for (x = [pixel[1] : pixel[1] : display[1] - pixel[1]]) x ];
 
-module cut_long() {
-  copies = [ for ( x = [ 0 : display[2] + 1 : stock[1] - display[2] ]) x ];
-  projection(cut = true) {
-    for (x = copies) {
-      translate([0, x, 0])
-        rotate([-90, 0, 0])
-          render(convexity = 2)
-            long_strip();
-    }
-  }
-
-  color("blue", alpha=0.2)
-    cube(stock);
-  echo("there are ", len(long_strip_rows), " long strips");
-  echo("make ", ceil(len(long_strip_rows) / len(copies)), " copies of the long strips" );
+module cut_strip_short() {
+  cut_strip(len(short_strip_rows), [display[1], stock[2], display[2]])
+    short_strip();
 }
 
-module cut_short() {
-  copies = [ for ( x = [ 0 : display[2] + 1 : stock[1] - display[2] ]) x ];
+module cut_strip_long() {
+  cut_strip(len(short_strip_rows), [display[0], stock[2], display[2]])
+    long_strip();
+}
+
+module cut_strip(copies, bounds, spacing = 2) {
   projection(cut = true) {
-    for (x = copies) {
-      translate([0, x, 0])
-        rotate([-90, 0, 0])
-          render(convexity = 2)
-            short_strip();
+    y_spacing = bounds[2] + spacing;
+    strips_bounds = [bounds[0], copies * y_spacing, bounds[1]];
+    paginate(strips_bounds, stock, [pixel[0], y_spacing, 0], first_page_offset=[pixel[0]/2, 0, 0]) {
+      for (offset = [ 0 : y_spacing : y_spacing * (copies - 1) ]) {
+        translate([0, offset, 0])
+          rotate([-90, 0, 0])
+            render(convexity = 2)
+              children();
+      }
     }
   }
-
-  color("blue", alpha=0.2)
-    cube(stock);
-  echo("there are ", len(short_strip_rows), " short strips");
-  echo("make ", ceil(len(short_strip_rows) / len(copies)), " copies of the short strips" );
 }
 
 led_strip_offset = (pixel[0] / 2 - led_strip_width/2) + stock[2] + stock[2]/2;
 
-module preview(){
+module preview() {
   for (y = [led_strip_offset : pixel[1] : (display[1] - pixel[1]) + led_strip_offset])
     translate([0, y, 0])
       led_strip(display[0], 30);
