@@ -19,11 +19,26 @@ led_strip_width = 10;
 led_strip_thickness = 0.3;
 apa102 = [5, 5, 1.5];
 
-//preview();
+//cut_edges();
+preview();
 //cut_strip_short();
-cut_strip_long();
+//cut_top();
+//cut_strip_long();
 short_strip_rows = [ for (x = [pixel[0] : pixel[0] : display[0] - pixel[0]]) x ];
 long_strip_rows  = [ for (x = [pixel[1] : pixel[1] : display[1] - pixel[1]]) x ];
+
+module cut_edges() {
+  cut_strip(2, [display[0], stock[2], display[2]])
+    short_edge_strip();
+  translate([0, (display[2] + 2) * 2, 0])
+  cut_strip(2, [display[1] + stock[2] * 2, stock[2], display[2]])
+    long_edge_strip();
+}
+
+module cut_top() {
+  projection(cut = true)
+    top();
+}
 
 module cut_strip_short() {
   cut_strip(len(short_strip_rows), [display[1], stock[2], display[2]])
@@ -70,8 +85,25 @@ module preview() {
         long_strip();
     }
 
+  short_edge_strip();
+    translate([0, display[1] + stock[2], 0])
+  short_edge_strip();
+
+  rotate([0,0,90])
+  long_edge_strip();
+    translate([display[0] + stock[2], 0])
+  rotate([0,0,90])
+  long_edge_strip();
+
   color(alpha=0.2)
   cube(display);
+  color("green", alpha=0.5)
+  translate([-stock[2], 0, display[2]])
+    top();
+}
+
+module top() {
+  cube([display[0] + stock[2] * 2, display[1] + stock[2] * 2, stock[2]]);
 }
 
 module led_strip(length, led_per_meter) {
@@ -97,6 +129,14 @@ module short_strip() {
 
 module long_strip() {
   cube_with_slots_snap([display[0], stock[2], display[2]], pixel[0], [stock[2], stock[2] * 2, display[2]/2]);
+}
+
+module short_edge_strip() {
+  cube([display[0], stock[2], display[2]]);
+}
+
+module long_edge_strip() {
+  cube([display[1] + stock[2] * 2, stock[2], display[2]]);
 }
 
 module cube_with_slots_snap(cube_size, slot_spacing, slot_size) {
