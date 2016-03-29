@@ -1,3 +1,22 @@
+/**
+ * Paginates any children by slicing them up onto multiple pages.
+ *
+ * bounds: the bounding box of the children (as OpenSCAD doesn't support
+ *         computing that trivially as of this writing)
+ * page: 3D bounds of the page
+ * snap: interval at which the object can be cut to fit onto pages ([0,0,0] disables)
+ * first_page_offset: extra offset when snapping
+ * spacing: how far apart the pages will be spaced
+ *
+ * To aid design of certain types of parametric designs, this can optionally snap
+ * page cuts to a grid so that the paged objects can be pieced back together
+ * most effectively (along natural boundaries). There is a first_page_offset to
+ * allow for putting slightly more material on the first page (if you've got an
+ * outer perimeter or something like that).
+ *
+ * This was designed to make it easier to lasercut large grids, so it only
+ * supports pagination of 3D objects in a 2D plane.
+ */
 module paginate(bounds, page, snap=[0,0,0], first_page_offset=[0, 0, 0], spacing=[10,10,10]) {
   echo(bounds);
   echo(page);
